@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const { buildLatest } = require('./lib/parse-times');
 
 // Configuration
 const url = 'https://waterloomasjid.com/main/index.php/prayers';
@@ -156,6 +157,13 @@ async function extractPrayerTimes() {
     if (extractedData.length === 0) {
       throw new Error('No prayer data found on the page');
     }
+
+    // ---- latest.json: ONLY the days the page really showed (no weekday-pattern filling) --------------------------
+    // The website reads this file. If the page layout changes and nothing valid can be parsed, buildLatest throws,
+    // the workflow fails and the website shows a "sync failed / data is stale" warning instead of wrong times.
+    const { payload, skipped } = buildLatest(extractedData, { sourceUrl: url, log: (m) => log(m, 'warn') });
+    fs.writeFileSync(path.join(outputDir, 'latest.json'), JSON.stringify(payload, null, 2) + '\n');
+    log(`Wrote latest.json with ${payload.days.length} real day(s): ${payload.days[0].date} .. ${payload.days[payload.days.length - 1].date}` + (skipped.length ? ` (${skipped.length} skipped)` : ''));
     
     // Process the data into athan and iqama formats with day number and day of week
     log('Processing extracted week data...');
@@ -207,6 +215,8 @@ async function extractPrayerTimes() {
     // Sort by day number to ensure proper order
     processedWeekData.sort((a, b) => a.dayNumber - b.dayNumber);
     
+    // NOTE: everything below fills the rest of the month by repeating the day-of-week pattern. Those CSV rows are
+    // EXTRAPOLATED, have no year, and must never be shown as real prayer times. Real data lives in latest.json.
     // Create full month data
     const today = new Date();
     const currentMonth = today.getMonth();

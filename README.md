@@ -9,6 +9,19 @@ This project automates the process of:
 2. Uploading the times to Mawaqit (both Athan and Iqama times)
 3. Running on a scheduled basis via GitHub Actions
 
+## `prayer_times/latest.json` (the file the website reads)
+
+Every run writes `prayer_times/latest.json` with **only the days the Waterloo Masjid page actually showed** (about 7).
+Each day has an ISO `date` (year taken from the page's "May 2025 12 Mon" header and cross-checked against the weekday),
+the six start times and five iqamah times in 24-hour `HH:MM`, plus top-level `generated_at` and `source_url`.
+The page shows 12-hour times without AM/PM, so the prayer decides it (Fajr/Sunrise AM, Dhuhr 12:xx-1:xx PM, Asr/Maghrib/Isha PM);
+anything that doesn't fit is skipped and logged rather than guessed. If nothing valid can be parsed the run fails, so a broken
+scraper is visible. Tests: `npm test`.
+
+**Do not use `athan_times_*.csv` / `iqama_times_*.csv` as prayer times.** Those fill the rest of the month by repeating a
+day-of-week pattern ("Using day of week N pattern" in the log), so most rows are extrapolated and wrong, and they have no year.
+They are kept only for the Mawaqit uploader.
+
 ## Configuration
 
 ### Required Environment Variables

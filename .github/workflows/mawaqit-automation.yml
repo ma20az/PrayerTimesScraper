@@ -1,0 +1,93 @@
+name: Update Mawaqit Prayer Times
+
+on:
+  schedule:
+    # Run every Sunday at 6 AM UTC (adjust timezone as needed)
+    - cron: '0 6 * * 0'
+    # Run on the 1st day of every month at 6 AM UTC
+    - cron: '0 6 1 * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  update-prayer-times:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install Python dependencies for uploader
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        playwright install chromium
+      
+    - name: Run Prayer Times Scraper
+      run: |
+        # Install Node.js dependencies
+        npm install
+        
+        # Run the prayer times scraper
+        echo "🚀 Running prayer times scraper..."
+        node extract-prayer-times.js
+        
+        # Verify CSV files were created
+        echo "📁 Prayer times directory contents:"
+        ls -la ./prayer_times/ || echo "No prayer_times directory found"
+        
+    - name: Upload to Mawaqit (normal mode)
+      env:
+        MAWAQIT_USER: ${{ secrets.MAWAQIT_USER }}
+        MAWAQIT_PASS: ${{ secrets.MAWAQIT_PASS }}
+        GMAIL_USER: ${{ secrets.GMAIL_USER }}
+        GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        TWOCAPTCHA_API_KEY: ${{ secrets.TWOCAPTCHA_API_KEY }}
+        PRAYER_TIMES_DIR: ./prayer_times
+        HEADLESS: "true"
+        DEBUG_MODE: "false"
+      run: |
+        python mawaqit_uploader.py
+        
+  debug-retry:
+    needs: update-prayer-times
+    if: ${{ needs.update-prayer-times.result == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Retry Upload to Mawaqit (debug mode)
+      env:
+        MAWAQIT_USER: ${{ secrets.MAWAQIT_USER }}
+        MAWAQIT_PASS: ${{ secrets.MAWAQIT_PASS }}
+        GMAIL_USER: ${{ secrets.GMAIL_USER }}
+        GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        TWOCAPTCHA_API_KEY: ${{ secrets.TWOCAPTCHA_API_KEY }}
+        PRAYER_TIMES_DIR: ./prayer_times
+        HEADLESS: "false"
+        DEBUG_MODE: "true"
+      run: |
+        echo "⚠️ Primary upload failed. Running debug retry with screenshots enabled." 
+        python mawaqit_uploader.py || echo "Debug retry script exited with code $?"
+    - name: Upload debug artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: debug-artifacts
+        path: |
+          debug_*.png
+          *.log
+          debug_log.txt
+          upload_debug.log
+        retention-days: 10
