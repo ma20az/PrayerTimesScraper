@@ -5,6 +5,9 @@ on:
     # leaves a gap (the website would have no row for the last day of each week). Daily keeps latest.json current.
     - cron: '30 8 * * *'
   workflow_dispatch: # Allows manual triggering
+permissions:
+  contents: write # lets the job commit prayer_times/latest.json with the built-in token
+
 jobs:
   extract-prayer-times:
     runs-on: ubuntu-latest
