@@ -1,22 +1,8 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-11-21T16:20:20.710Z",
+  "generated_at": "2026-11-22T16:34:04.818Z",
   "source_url": "https://waterloomasjid.com/main/index.php/prayers",
   "days": [
-    {
-      "date": "2026-11-21",
-      "fajr": "06:01",
-      "sunrise": "07:23",
-      "dhuhr": "12:09",
-      "asr": "15:10",
-      "maghrib": "16:53",
-      "isha": "18:16",
-      "fajr_iqamah": "06:30",
-      "dhuhr_iqamah": "12:45",
-      "asr_iqamah": "15:30",
-      "maghrib_iqamah": "16:57",
-      "isha_iqamah": "19:30"
-    },
     {
       "date": "2026-11-22",
       "fajr": "06:02",
@@ -97,6 +83,20 @@
       "isha": "18:13",
       "fajr_iqamah": "06:30",
       "dhuhr_iqamah": "12:40",
+      "asr_iqamah": "15:15",
+      "maghrib_iqamah": "16:53",
+      "isha_iqamah": "19:30"
+    },
+    {
+      "date": "2026-11-28",
+      "fajr": "06:08",
+      "sunrise": "07:31",
+      "dhuhr": "12:11",
+      "asr": "15:06",
+      "maghrib": "16:49",
+      "isha": "18:13",
+      "fajr_iqamah": "06:30",
+      "dhuhr_iqamah": "12:45",
       "asr_iqamah": "15:15",
       "maghrib_iqamah": "16:53",
       "isha_iqamah": "19:30"
